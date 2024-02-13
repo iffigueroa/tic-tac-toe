@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function Cell({value, onCellClick}){
   return (
@@ -6,18 +6,29 @@ function Cell({value, onCellClick}){
   );
 }
 
-function Board({xIsNext, boardValues, onPlay}) {
+function Board({xIsNext, boardValues, onPlay, gameOver}) {
   const winner = calculateWinner(boardValues)
+  const draw = boardFull(boardValues)
+  const endGame = (winner || draw) ? true : false;
   let status; 
   if(winner){
-    status = "Winner: " + winner;
-  } else {
+    status = "Winner: " + winner
+  } else if (draw){
+    status = "Game Over: Draw!"
+  }else {
     status = "Next Player: "+(xIsNext? "X" : "O")
   }
 
+  useEffect(() => {
+    if (endGame){
+        gameOver();
+      }
+    },[gameOver, endGame]
+  );
+
   function handleClick(i){
-    console.log(boardValues)
-    if (boardValues[i] || calculateWinner(boardValues)){
+    console.log("Current Board Values: "+boardValues)
+    if (boardValues[i] || winner || draw){
       return;
     }
     //Make copy of current board
@@ -28,6 +39,15 @@ function Board({xIsNext, boardValues, onPlay}) {
       newBoardValues[i] =  'O';
     }
     onPlay(newBoardValues)
+  }
+
+  function boardFull(){
+    for (let i=0; i < boardValues.length; i++){
+      if (!boardValues[i]){
+        return false
+      }
+    }
+    return true
   }
 
   function calculateWinner(squares) {
@@ -45,7 +65,6 @@ function Board({xIsNext, boardValues, onPlay}) {
     for (let i = 0; i < lines.length; i++) {
       const [a, b, c] = lines[i];
       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        console.log(lines[i])
         return squares[a];
       }
     }
@@ -83,6 +102,19 @@ export default function TicTacToe(){
   // Maintain player state (who's turn is it to move)
   const xIsNext = currentMove % 2 == 0;
 
+  //Handle when game ends
+  const newGame = () =>{
+    //Reset state: 
+    setCurrentMove(0)
+    setHistory([Array(9).fill(null)])
+    console.log("Let's start a new game")
+  }
+  const gameOver = () => {
+    console.log("game is over")
+    // TODO: Add popup and ask if they want to start over
+    // newGame()
+  }
+
   function handlePlay(updatedValues){
     const updatedHistory = [...history.slice(0, currentMove+1), updatedValues]
     setHistory(updatedHistory)
@@ -111,9 +143,10 @@ export default function TicTacToe(){
   return (
     <div className='game'>
       <div className='game-board'>
-        <Board xIsNext={xIsNext} boardValues={currentBoardValues} onPlay={handlePlay}/>
+        <Board xIsNext={xIsNext} boardValues={currentBoardValues} onPlay={handlePlay} gameOver={gameOver}/>
       </div>
       <div className='game-info'>
+        {<button onClick={newGame}>New Game</button>} 
         <ol>{moves}</ol>
       </div>
     </div>
