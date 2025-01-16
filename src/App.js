@@ -146,7 +146,9 @@ export default function TicTacToe(){
         <Board xIsNext={xIsNext} boardValues={currentBoardValues} onPlay={handlePlay} gameOver={gameOver}/>
       </div>
       <div className='game-info'>
-        {<button onClick={newGame}>New Game</button>} 
+        <button onClick={newGame}>New Game</button>
+        <h3>Game History:</h3>
+        <hr/>
         <ol>{moves}</ol>
       </div>
     </div>
